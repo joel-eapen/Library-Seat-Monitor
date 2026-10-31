@@ -35,7 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       package: 'com.joel.libraryseats',
       adaptiveIcon: {
-        backgroundColor: '#E6F4FE',
+        backgroundColor: '#F6F5F2',
         foregroundImage: './assets/android-icon-foreground.png',
         backgroundImage: './assets/android-icon-background.png',
         monochromeImage: './assets/android-icon-monochrome.png',
