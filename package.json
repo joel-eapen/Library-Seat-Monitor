@@ -1,0 +1,12 @@
+{
+  "name": "library-seat-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "npm --prefix mobile run typecheck && npm --prefix server run typecheck",
+    "test": "npm --prefix mobile test && npm --prefix server test",
+    "mock": "npm --prefix mobile run mock",
+    "relay:dev": "npm --prefix server run dev",
+    "mobile:start": "npm --prefix mobile run start"
+  }
+}

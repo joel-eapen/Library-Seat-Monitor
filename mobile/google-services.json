@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "372306306287",
+    "project_id": "library-seat-monitor",
+    "storage_bucket": "library-seat-monitor.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:372306306287:android:b08b518f7fd0e4f95ee71a",
+        "android_client_info": {
+          "package_name": "com.joel.libraryseats"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlE9Pl-2SO_geB-zbqJWtbrbMbtxBkbaQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
