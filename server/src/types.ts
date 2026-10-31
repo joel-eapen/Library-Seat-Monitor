@@ -28,6 +28,7 @@ export type PollStatus = {
   lastError: string | null;
   seatCount: number | null;
   lastFreedCount: number;
+  libraryClosed: boolean;
 };
 
 export type PushNotification = {

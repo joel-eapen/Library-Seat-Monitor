@@ -137,6 +137,15 @@ export function buildSnapshot(seats: Seat[], fetchedAt: number): SeatSnapshot {
   };
 }
 
+/** The library is treated as closed when it has seats and none are occupied. */
+export function isLibraryClosed(snapshot: SeatSnapshot | null): boolean {
+  return (
+    snapshot !== null &&
+    snapshot.summary.total > 0 &&
+    snapshot.summary.occupied === 0
+  );
+}
+
 export function detectNewlyAvailable(
   previous: SeatSnapshot | null,
   current: SeatSnapshot

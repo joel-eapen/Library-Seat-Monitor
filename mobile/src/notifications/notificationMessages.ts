@@ -49,3 +49,17 @@ export function buildNotificationContent(seats: Seat[]): NotificationContent {
     },
   };
 }
+
+/** Mirrors the relay's single "library closed" push (type: library-closed). */
+export function buildLibraryClosedContent(): NotificationContent {
+  return {
+    title: 'Library is closed',
+    body: 'All seats are unoccupied.',
+    data: {
+      type: 'library-closed',
+      floor: '',
+      seats: '',
+      count: '0',
+    },
+  };
+}

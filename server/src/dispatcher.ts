@@ -42,6 +42,33 @@ export class PushDispatcher {
     await this.scheduleOrFlush(token);
   }
 
+  async notifyLibraryClosed(tokens: string[]): Promise<void> {
+    const uniqueTokens = [...new Set(tokens)];
+    if (uniqueTokens.length === 0) {
+      return;
+    }
+
+    for (const token of uniqueTokens) {
+      this.clear(token);
+    }
+
+    try {
+      const result = await this.sender.send(
+        uniqueTokens.map((token) => ({
+          token,
+          title: 'Library is closed',
+          body: 'All seats are unoccupied.',
+          data: { type: 'library-closed' },
+        }))
+      );
+      if (result.invalidTokens.length > 0 && this.onInvalidTokens) {
+        await this.onInvalidTokens(result.invalidTokens);
+      }
+    } catch (error) {
+      console.error('Could not send library closed notification:', error);
+    }
+  }
+
   clear(token: string): void {
     const timer = this.timers.get(token);
     if (timer) {

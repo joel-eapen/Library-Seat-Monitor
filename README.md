@@ -20,10 +20,12 @@ No account, database, or reservations are involved. The relay only stores Expo p
   - Local notification test
   - Remote push registration for floor-specific alerts
   - 4×2 Android home-screen widget with manual refresh
+  - Widget shows **Library closed** when every seat is unoccupied
 - `server/` — tiny Node push relay
   - Polls the same seat feed every 5 seconds
   - Sends Expo push notifications when `occupied: true` becomes `false`
-  - Filters alerts by each subscriber's selected floors
+  - Sends one **Library is closed** notification when all seats become unoccupied
+  - Filters seat alerts by each subscriber's selected floors
   - 30-second per-token cooldown with queued/grouped changes
   - JSON file persistence; no MongoDB
 - `mobile/scripts/mock-seat-server.mjs` — local mock of the NITJ feed
@@ -168,7 +170,8 @@ The relay listens on port `3000`.
 
 - The app polls every 5 seconds in the foreground. When a seat changes from occupied to free, it shows an in-app banner and refreshes the widget.
 - The relay polls independently. It stores the previous snapshot, detects occupied → free changes, and groups seats by floor.
-- Each notification contains `type`, `floor`, `seats`, and `count` data. Tapping it opens the app on that floor with the freed seats highlighted.
+- Seat notifications contain `type`, `floor`, `seats`, and `count` data. Tapping one opens the app on that floor with the freed seats highlighted. The closed notification uses `type: "library-closed"` and opens the app normally.
+- If every seat becomes unoccupied, the relay sends one global **Library is closed** notification instead of a burst of seat alerts. The in-app map still shows every seat as available.
 - The relay applies a 30-second cooldown per push token. Changes during the cooldown are merged and sent together.
 - Expo tickets with `DeviceNotRegistered` remove the stale subscription automatically.
 - The relay keeps its snapshot in `server/data/state.json`. If the relay restarts and the saved snapshot is older than `STATE_STALE_MS` (2 minutes), the first poll becomes a new baseline instead of sending a burst of alerts.
@@ -178,6 +181,7 @@ The relay listens on port `3000`.
 - Add the widget by long-pressing the home screen → Widgets → **Library Seats**.
 - Android enforces a minimum 30-minute background update period.
 - Tap **Refresh** on the widget to run a headless fetch immediately.
+- The widget shows **Library closed** when all seats are unoccupied.
 - Tap the widget body to open the app.
 - The app also pushes widget updates after foreground polls when the totals change (throttled to once per minute).
 

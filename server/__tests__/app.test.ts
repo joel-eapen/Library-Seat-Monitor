@@ -45,6 +45,7 @@ async function setup() {
     lastError: null,
     seatCount: 390,
     lastFreedCount: 2,
+    libraryClosed: false,
   };
   const app = createApp({
     subscriptions,

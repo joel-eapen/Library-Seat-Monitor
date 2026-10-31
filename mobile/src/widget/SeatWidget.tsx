@@ -23,6 +23,7 @@ const COLORS = {
   available: '#4ade80',
   occupied: '#f87171',
   accent: '#38bdf8',
+  closed: '#fbbf24',
 } as const;
 
 export function SeatWidget(props: SeatWidgetProps) {
@@ -34,18 +35,28 @@ export function SeatWidget(props: SeatWidgetProps) {
     updatedAt,
     stale,
     empty,
+    closed,
   } = props;
+  const showClosed = closed && !empty;
 
   const statusText = empty
     ? 'Open the app to load seats'
-    : stale
-      ? `Stale · ${formatClock(updatedAt)}`
-      : `Updated ${formatClock(updatedAt)}`;
+    : showClosed
+      ? stale
+        ? 'Closed · stale'
+        : `Closed · ${formatClock(updatedAt)}`
+      : stale
+        ? `Stale · ${formatClock(updatedAt)}`
+        : `Updated ${formatClock(updatedAt)}`;
 
   return (
     <FlexWidget
       clickAction="OPEN_APP"
-      accessibilityLabel="Library seat availability. Tap to open the app."
+      accessibilityLabel={
+        showClosed
+          ? 'Library closed. All seats are unoccupied. Tap to open the app.'
+          : 'Library seat availability. Tap to open the app.'
+      }
       style={{
         height: 'match_parent',
         width: 'match_parent',
@@ -78,7 +89,13 @@ export function SeatWidget(props: SeatWidgetProps) {
           allowFontScaling={false}
           maxLines={1}
           style={{
-            color: empty ? COLORS.muted : stale ? COLORS.occupied : COLORS.available,
+            color: empty
+              ? COLORS.muted
+              : showClosed
+                ? COLORS.closed
+                : stale
+                  ? COLORS.occupied
+                  : COLORS.available,
             fontSize: 10,
           }}
         />
@@ -114,41 +131,70 @@ export function SeatWidget(props: SeatWidgetProps) {
             justifyContent: 'space-between',
           }}
         >
-          <FlexWidget
-            style={{
-              flexDirection: 'row',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              width: 'match_parent',
-            }}
-          >
-            <FlexWidget style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+          {showClosed ? (
+            <FlexWidget
+              style={{
+                flex: 1,
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 'match_parent',
+              }}
+            >
               <TextWidget
-                text={String(available)}
+                text="Library closed"
                 allowFontScaling={false}
                 style={{
-                  color: COLORS.available,
-                  fontSize: 38,
+                  color: COLORS.closed,
+                  fontSize: 25,
                   fontWeight: '800',
-                  lineHeight: 40,
                 }}
               />
               <TextWidget
-                text=" available"
+                text={`All ${total} seats unoccupied`}
                 allowFontScaling={false}
-                style={{
-                  color: COLORS.muted,
-                  fontSize: 12,
-                  marginBottom: 5,
-                }}
+                style={{ color: COLORS.muted, fontSize: 11 }}
               />
             </FlexWidget>
-            <TextWidget
-              text={`${occupied} occupied / ${total}`}
-              allowFontScaling={false}
-              style={{ color: COLORS.muted, fontSize: 11, marginBottom: 6 }}
-            />
-          </FlexWidget>
+          ) : (
+            <FlexWidget
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                justifyContent: 'space-between',
+                width: 'match_parent',
+              }}
+            >
+              <FlexWidget
+                style={{ flexDirection: 'row', alignItems: 'flex-end' }}
+              >
+                <TextWidget
+                  text={String(available)}
+                  allowFontScaling={false}
+                  style={{
+                    color: COLORS.available,
+                    fontSize: 38,
+                    fontWeight: '800',
+                    lineHeight: 40,
+                  }}
+                />
+                <TextWidget
+                  text=" available"
+                  allowFontScaling={false}
+                  style={{
+                    color: COLORS.muted,
+                    fontSize: 12,
+                    marginBottom: 5,
+                  }}
+                />
+              </FlexWidget>
+              <TextWidget
+                text={`${occupied} occupied / ${total}`}
+                allowFontScaling={false}
+                style={{ color: COLORS.muted, fontSize: 11, marginBottom: 6 }}
+              />
+            </FlexWidget>
+          )}
 
           <FlexWidget
             style={{

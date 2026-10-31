@@ -1,6 +1,10 @@
 import { seatsForSubscription } from './notifications.js';
 import { parseSeatsPayload, toSeatMap } from './seats.js';
-import { detectFreedSeats } from './transitions.js';
+import {
+  areAllSeatsUnoccupied,
+  detectFreedSeats,
+  isSeatMapAllUnoccupied,
+} from './transitions.js';
 import type { StateRepository } from './stateStore.js';
 import type { SubscriptionStore } from './subscriptions.js';
 import type { PushDispatcher } from './dispatcher.js';
@@ -63,6 +67,7 @@ export class SeatPoller {
     lastError: null,
     seatCount: null,
     lastFreedCount: 0,
+    libraryClosed: false,
   };
 
   constructor(options: PollerOptions) {
@@ -118,16 +123,29 @@ export class SeatPoller {
       }
 
       const previous = this.previousSnapshot;
-      const freed = detectFreedSeats(previous?.seats ?? null, seats);
+      const allUnoccupied = areAllSeatsUnoccupied(seats);
+      const libraryJustClosed =
+        previous !== null &&
+        allUnoccupied &&
+        !isSeatMapAllUnoccupied(previous.seats);
+      const freed = libraryJustClosed
+        ? []
+        : detectFreedSeats(previous?.seats ?? null, seats);
       this.status = {
         ok: true,
         lastSuccessAt: fetchedAt,
         lastError: null,
         seatCount: seats.length,
         lastFreedCount: freed.length,
+        libraryClosed: allUnoccupied,
       };
 
-      if (freed.length > 0) {
+      if (libraryJustClosed) {
+        const subscriptions = this.options.subscriptions.list();
+        await this.options.dispatcher.notifyLibraryClosed(
+          subscriptions.map((subscription) => subscription.token)
+        );
+      } else if (freed.length > 0) {
         const subscriptions = this.options.subscriptions.list();
         await Promise.all(
           subscriptions.map((subscription) => {

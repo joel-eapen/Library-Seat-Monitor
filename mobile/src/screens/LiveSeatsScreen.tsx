@@ -18,12 +18,14 @@ import { SummaryBar } from '../components/SummaryBar';
 import { useLiveSeats } from '../hooks/useLiveSeats';
 import { getFloorMapLayout } from '../lib/floorMaps';
 import {
+  buildLibraryClosedContent,
   buildNotificationContent,
   type NotificationContent,
 } from '../notifications/notificationMessages';
 import {
   detectNewlyAvailable,
   filterSeatsByFloors,
+  isLibraryClosed,
 } from '../lib/seatUtils';
 import { formatRelativeTime } from '../lib/time';
 import { NotificationSettingsModal } from '../settings/NotificationSettingsModal';
@@ -118,15 +120,26 @@ export function LiveSeatsScreen({
       return;
     }
 
-    const freed = filterSeatsByFloors(
-      detectNewlyAvailable(previous, snapshot),
-      settings.floors
-    );
-    if (freed.length === 0) {
+    let content: NotificationContent | null = null;
+    if (isLibraryClosed(snapshot)) {
+      // One "closed" banner instead of a burst of freed-seat alerts,
+      // matching the relay's push behaviour.
+      if (!isLibraryClosed(previous)) {
+        content = buildLibraryClosedContent();
+      }
+    } else {
+      const freed = filterSeatsByFloors(
+        detectNewlyAvailable(previous, snapshot),
+        settings.floors
+      );
+      if (freed.length > 0) {
+        content = buildNotificationContent(freed);
+      }
+    }
+    if (!content) {
       return;
     }
 
-    const content = buildNotificationContent(freed);
     setBanner(content);
     const timeout = setTimeout(() => setBanner(null), 10000);
     return () => clearTimeout(timeout);

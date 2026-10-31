@@ -64,6 +64,36 @@ describe('PushDispatcher', () => {
     dispatcher.stop();
   });
 
+  it('sends a library closed notification immediately and drops queued seat alerts', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000);
+
+    const sender = new RecordingSender();
+    const dispatcher = new PushDispatcher({
+      sender,
+      cooldownMs: 30_000,
+    });
+
+    await dispatcher.enqueue(token, [seat('G-1')]);
+    await dispatcher.enqueue(token, [seat('G-2', 'G', 2)]);
+    expect(dispatcher.pendingCount(token)).toBe(1);
+
+    await dispatcher.notifyLibraryClosed([token]);
+
+    expect(sender.calls).toHaveLength(2);
+    expect(sender.calls[1][0]).toMatchObject({
+      title: 'Library is closed',
+      body: 'All seats are unoccupied.',
+      data: { type: 'library-closed' },
+    });
+    expect(dispatcher.pendingCount(token)).toBe(0);
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(sender.calls).toHaveLength(2);
+
+    dispatcher.stop();
+  });
+
   it('deduplicates the same seat during a cooldown', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_000_000);

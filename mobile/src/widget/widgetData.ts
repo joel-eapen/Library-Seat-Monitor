@@ -1,3 +1,4 @@
+import { isLibraryClosed } from '../lib/seatUtils';
 import type { SeatSnapshot } from '../types';
 
 export type SeatWidgetFloor = {
@@ -14,6 +15,7 @@ export type SeatWidgetProps = {
   updatedAt: number | null;
   stale: boolean;
   empty: boolean;
+  closed: boolean;
   width?: number;
 };
 
@@ -30,6 +32,7 @@ export function toWidgetProps(
       updatedAt: null,
       stale: options.stale ?? false,
       empty: true,
+      closed: false,
     };
   }
 
@@ -45,5 +48,6 @@ export function toWidgetProps(
     updatedAt: snapshot.fetchedAt,
     stale: options.stale ?? false,
     empty: options.empty ?? false,
+    closed: isLibraryClosed(snapshot),
   };
 }

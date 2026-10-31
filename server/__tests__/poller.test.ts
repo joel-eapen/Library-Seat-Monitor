@@ -79,6 +79,7 @@ describe('SeatPoller', () => {
         seat('G-1', 'G', 1, false),
         seat('1-1', '1', 1, false),
         seat('1-2', '1', 2, false),
+        seat('1-3', '1', 3, true),
       ],
     ];
 
@@ -120,13 +121,67 @@ describe('SeatPoller', () => {
     dispatcher.stop();
   });
 
+  it('notifies every subscriber once when the library becomes fully unoccupied', async () => {
+    const subscriptions = await createSubscriptions();
+    const secondToken = 'ExpoPushToken[second]';
+    await subscriptions.upsert(secondToken, ['1']);
+    const sender = new RecordingSender();
+    const dispatcher = new PushDispatcher({ sender, cooldownMs: 0 });
+    const state = new MemoryState();
+    const responses: Seat[][] = [
+      [seat('G-1', 'G', 1, true), seat('1-1', '1', 1, true)],
+      [seat('G-1', 'G', 1, false), seat('1-1', '1', 1, false)],
+      [seat('G-1', 'G', 1, false), seat('1-1', '1', 1, false)],
+    ];
+
+    const poller = new SeatPoller({
+      seatApiUrl: 'http://example.test/seats',
+      intervalMs: 60_000,
+      requestTimeoutMs: 1000,
+      stateStaleMs: 120_000,
+      stateSaveIntervalMs: 0,
+      state,
+      subscriptions,
+      dispatcher,
+      fetchSeats: async () => {
+        const next = responses.shift();
+        if (!next) {
+          throw new Error('No more responses');
+        }
+        return next;
+      },
+    });
+
+    await poller.runOnce();
+    expect(sender.calls).toHaveLength(0);
+
+    const status = await poller.runOnce();
+    expect(status.libraryClosed).toBe(true);
+    expect(status.lastFreedCount).toBe(0);
+    expect(sender.calls).toHaveLength(1);
+    expect(sender.calls[0]).toHaveLength(2);
+    expect(
+      sender.calls[0].every(
+        (message) => message.data.type === 'library-closed'
+      )
+    ).toBe(true);
+    expect(sender.calls[0].map((message) => message.token).sort()).toEqual(
+      [token, secondToken].sort()
+    );
+
+    await poller.runOnce();
+    expect(sender.calls).toHaveLength(1);
+
+    dispatcher.stop();
+  });
+
   it('uses a recent persisted state as a baseline', async () => {
     const subscriptions = await createSubscriptions();
     const sender = new RecordingSender();
     const dispatcher = new PushDispatcher({ sender, cooldownMs: 0 });
     const state = new MemoryState();
     state.snapshot = {
-      seats: { 'G-1': true },
+      seats: { 'G-1': true, '1-1': true },
       fetchedAt: Date.now() - 10_000,
     };
 
@@ -139,7 +194,10 @@ describe('SeatPoller', () => {
       state,
       subscriptions,
       dispatcher,
-      fetchSeats: async () => [seat('G-1', 'G', 1, false)],
+      fetchSeats: async () => [
+        seat('G-1', 'G', 1, false),
+        seat('1-1', '1', 1, true),
+      ],
     });
 
     await poller.start();
