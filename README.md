@@ -15,7 +15,7 @@ No account, database, or reservations are involved. The relay only stores Expo p
 - `mobile/` — Expo / React Native Android app
   - Polls every 5 seconds while in the foreground
   - Cached last snapshot with stale/offline states
-  - Floor selector and seat grid (390 seats: Ground 42, Floor 1 114, Floor 2 144, Floor 3 90)
+  - Floor selector plus reading-hall floor maps for all four floors (390 live seats: Ground 42, Floor 1 114, Floor 2 144, Floor 3 90)
   - In-app banner when a seat frees while the app is open
   - Local notification test
   - Remote push registration for floor-specific alerts

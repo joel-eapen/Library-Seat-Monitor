@@ -61,14 +61,8 @@ export function LiveSeatsScreen({
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [highlightSeats, setHighlightSeats] = useState<string[]>([]);
   const [banner, setBanner] = useState<NotificationContent | null>(null);
-  const [now, setNow] = useState(Date.now());
   const [refreshing, setRefreshing] = useState(false);
   const previousSnapshotRef = useRef<SeatSnapshot | null>(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (!snapshot) {
@@ -138,7 +132,7 @@ export function LiveSeatsScreen({
     return () => clearTimeout(timeout);
   }, [snapshot, settings.enabled, settings.floors]);
 
-  const groups = snapshot?.groups ?? [];
+  const groups = useMemo(() => snapshot?.groups ?? [], [snapshot?.groups]);
   const selectedSummary = useMemo(
     () => groups.find((group) => group.key === selectedGroup) ?? null,
     [groups, selectedGroup]
@@ -171,7 +165,7 @@ export function LiveSeatsScreen({
           <Text style={styles.title}>Seat availability</Text>
           <Text style={styles.updated}>
             {snapshot
-              ? `${overallAvailable} seats free overall · updated ${formatRelativeTime(lastUpdated, now)}`
+              ? `${overallAvailable} seats free overall · updated ${formatRelativeTime(lastUpdated)}`
               : 'Connecting to the live seat feed'}
           </Text>
         </View>

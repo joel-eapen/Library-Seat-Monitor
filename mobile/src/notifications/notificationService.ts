@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
+import { AndroidImportance } from 'expo-notifications';
 import { Platform } from 'react-native';
 import type { NotificationPayload } from '../types';
 
@@ -29,7 +30,7 @@ export async function ensureNotificationChannel(): Promise<void> {
   await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNEL_ID, {
     name: 'Seat availability',
     description: 'Alerts when a seat becomes available',
-    importance: Notifications.AndroidImportance.HIGH,
+    importance: AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: '#16a34a',
   });

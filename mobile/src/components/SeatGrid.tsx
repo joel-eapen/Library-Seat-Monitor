@@ -15,7 +15,7 @@ const HORIZONTAL_PADDING = spacing.lg * 2;
 export function SeatGrid({ seats, highlightSeats }: Props) {
   const { width } = useWindowDimensions();
 
-  const { columns, tileSize, rows } = useMemo(() => {
+  const { tileSize, rows } = useMemo(() => {
     const availableWidth = Math.max(240, width - HORIZONTAL_PADDING);
     const columnCount = Math.max(
       4,
@@ -30,7 +30,6 @@ export function SeatGrid({ seats, highlightSeats }: Props) {
     }
 
     return {
-      columns: columnCount,
       tileSize: size,
       rows: chunked,
     };

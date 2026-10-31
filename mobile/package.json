@@ -21,6 +21,8 @@
   "devDependencies": {
     "@types/node": "^24.19.2",
     "@types/react": "~19.3.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
     "typescript": "~6.0.3",
     "vitest": "^5.0.5"
   },
@@ -32,7 +34,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "mock": "node scripts/mock-seat-server.mjs"
+    "mock": "node scripts/mock-seat-server.mjs",
+    "lint": "expo lint"
   },
   "private": true
 }
